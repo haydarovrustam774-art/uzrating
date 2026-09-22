@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="uz" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UzRating - O'zbekiston Tashkilotlari Milliy Reyting Platformasi</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#075985',
+                            800: '#0c4a6e',
+                            900: '#0f172a',
+                        },
+                        accent: {
+                            500: '#10b981',
+                            600: '#059669',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-header {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+        }
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col antialiased selection:bg-brand-500 selection:text-white">
+
+    <!-- Navigation Header -->
+    <header class="glass-header text-white sticky top-0 z-40 border-b border-slate-800 transition-all">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <!-- Logo -->
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('home')">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-500 to-accent-500 flex items-center justify-center shadow-lg shadow-brand-500/30">
+                    <i class="fa-solid font-bold text-xl text-white fa-chart-line"></i>
+                </div>
+                <div>
+                    <span class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">UzRating</span>
+                    <span class="text-xs block text-brand-500 font-semibold tracking-wider uppercase">O'zbekiston Reytingi</span>
+                </div>
+            </div>
+
+            <!-- Desktop Menu -->
+            <nav class="hidden md:flex items-center space-x-1">
+                <button onclick="switchTab('home')" id="nav-home" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-800 transition text-brand-500 bg-slate-800/60">
+                    <i class="fa-solid fa-house mr-2"></i>Bosh Sahifa
+                </button>
+                <button onclick="switchTab('catalog')" id="nav-catalog" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition">
+                    <i class="fa-solid fa-list-check mr-2"></i>Barcha Tashkilotlar
+                </button>
+                <button onclick="switchTab('calculator')" id="nav-calculator" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition">
+                    <i class="fa-solid fa-calculator mr-2"></i>Reyting Kalkulyatori
+                </button>
+                <button onclick="switchTab('methodology')" id="nav-methodology" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition">
+                    <i class="fa-solid fa-shield-halved mr-2"></i>Metodologiya
+                </button>
+            </nav>
+
+            <!-- Actions -->
+            <div class="flex items-center space-x-3">
+                <button onclick="openCompareModal()" class="relative bg-slate-800 hover:bg-slate-700 text-slate-200 p-2.5 rounded-lg border border-slate-700 text-sm font-medium transition flex items-center gap-2">
+                    <i class="fa-solid fa-code-compare text-brand-500"></i>
+                    <span class="hidden sm:inline">Taqqoslash</span>
+                    <span id="compare-badge" class="bg-brand-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">0</span>
+                </button>
+
+                <button onclick="openAddOrgModal()" class="bg-gradient-to-r from-brand-500 to-accent-500 hover:from-brand-600 hover:to-accent-600 text-white px-4 py-2.5 rounded-lg text-sm font-semibold shadow-md shadow-brand-500/20 transition flex items-center gap-2">
+                    <i class="fa-solid fa-plus"></i>
+                    <span class="hidden sm:inline">Tashkilot Qo'shish</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-grow">
+
+        <!-- TAB 1: BOSH SAHIFA (HOME) -->
+        <section id="tab-home" class="tab-content block">
+            <!-- Hero Banner -->
+            <div class="bg-gradient-to-b from-brand-900 via-slate-900 to-slate-950 text-white py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden border-b border-slate-800">
+                <div class="absolute -top-24 -right-24 w-96 h-96 bg-brand-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-accent-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                <div class="max-w-5xl mx-auto text-center relative z-10">
+                    <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-500/10 border border-brand-500/30 text-brand-500 text-xs font-semibold tracking-wider uppercase mb-6">
+                        <i class="fa-solid fa-award"></i> O'zbekiston Respublika Ochiq Reyting Tizimi
+                    </span>
+                    <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white mb-6 leading-tight">
+                        O'zbekistondagi Eng Ishonchli va <br class="hidden sm:inline"> <span class="bg-gradient-to-r from-brand-500 to-accent-500 bg-clip-text text-transparent">TOP Tashkilotlar</span> Reytingi
+                    </h1>
+                    <p class="text-slate-300 text-base sm:text-lg max-w-3xl mx-auto mb-10 leading-relaxed font-normal">
+                        Davlat va xususiy sektor muassasalarining xizmat sifati, shaffofligi, foydalanuvchilar mamnunligi hamda ekspertlar bahosiga asoslangan shaffof milliy reyting bazasi.
+                    </p>
+
+                    <!-- Fast Search Box -->
+                    <div class="max-w-3xl mx-auto bg-white/10 backdrop-blur-md p-2 rounded-2xl border border-white/10 shadow-2xl flex flex-col sm:flex-row gap-2">
+                        <div class="relative flex-grow flex items-center">
+                            <i class="fa-solid fa-magnifying-glass absolute left-4 text-slate-400"></i>
+                            <input type="text" id="hero-search-input" placeholder="Tashkilot nomi, soha yoki hududni yozing..." 
+                                class="w-full pl-11 pr-4 py-3.5 bg-white/90 text-slate-900 placeholder-slate-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm font-medium">
+                        </div>
+                        <button onclick="handleHeroSearch()" class="bg-brand-500 hover:bg-brand-600 text-white font-bold px-8 py-3.5 rounded-xl text-sm transition flex items-center justify-center gap-2 shadow-lg shadow-brand-500/30">
+                            <i class="fa-solid fa-sliders"></i> Reytingni Ko'rish
+                        </button>
+                    </div>
+
+                    <!-- Platform Quick Metrics -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto mt-12 pt-8 border-t border-slate-800 text-left">
+                        <div class="p-4 rounded-xl bg-slate-800/40 border border-slate-800">
+                            <div class="text-2xl font-black text-brand-500">250+</div>
+                            <div class="text-xs text-slate-400 mt-0.5">Baholangan Tashkilotlar</div>
+                        </div>
+                        <div class="p-4 rounded-xl bg-slate-800/40 border border-slate-800">
+                            <div class="text-2xl font-black text-accent-500">98.4%</div>
+                            <div class="text-xs text-slate-400 mt-0.5">Ma'lumotlar Aniqligi</div>
+                        </div>
+                        <div class="p-4 rounded-xl bg-slate-800/40 border border-slate-800">
+                            <div class="text-2xl font-black text-brand-500">45,000+</div>
+                            <div class="text-xs text-slate-400 mt-0.5">Foydalanuvchi Sharhlari</div>
+                        </div>
+                        <div class="p-4 rounded-xl bg-slate-800/40 border border-slate-800">
+                            <div class="text-2xl font-black text-accent-500">12 ta</div>
+                            <div class="text-xs text-slate-400 mt-0.5">Asosiy Sanoat Sohalari</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TOP Organizations Cards Section -->
+            <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+                <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+                    <div>
+                        <div class="flex items-center gap-2 text-brand-600 font-bold text-sm uppercase tracking-wider mb-2">
+                            <i class="fa-solid fa-crown text-amber-500"></i> Etakchilar
+                        </div>
+                        <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                            O'zbekistonning Eng Yuqori TOP Tashkilotlari
+                        </h2>
+                        <p class="text-slate-500 text-sm mt-1">Har bir soha bo'yicha eng yuqori reyting va ishonch indeksiga ega muassasalar</p>
+                    </div>
+
+                    <!-- Category Filter Tabs -->
+                    <div class="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 custom-scrollbar">
+                        <button onclick="filterTopCards('all')" class="top-filter-btn px-4 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap bg-brand-500 text-white shadow-md shadow-brand-500/20" data-cat="all">Barchasi</button>
+                        <button onclick="filterTopCards('IT & Texnologiya')" class="top-filter-btn px-4 py-2 rounded-xl text-xs font-semibold bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 transition whitespace-nowrap" data-cat="IT & Texnologiya">IT & Texnologiya</button>
+                        <button onclick="filterTopCards('Bank & Moliya')" class="top-filter-btn px-4 py-2 rounded-xl text-xs font-semibold bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 transition whitespace-nowrap" data-cat="Bank & Moliya">Bank & Moliya</button>
+                        <button onclick="filterTopCards('Ta\'lim')" class="top-filter-btn px-4 py-2 rounded-xl text-xs font-semibold bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 transition whitespace-nowrap" data-cat="Ta'lim">Ta'lim</button>
+                        <button onclick="filterTopCards('Tibbiyot')" class="top-filter-btn px-4 py-2 rounded-xl text-xs font-semibold bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 transition whitespace-nowrap" data-cat="Tibbiyot">Tibbiyot</button>
+                    </div>
+                </div>
+
+                <!-- TOP Grid Cards Container -->
+                <div id="top-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Cards will be dynamically injected via JS -->
+                </div>
+
+                <div class="text-center mt-12">
+                    <button onclick="switchTab('catalog')" class="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-8 py-3.5 rounded-xl font-semibold text-sm transition shadow-lg">
+                        Barcha Tashkilotlar Katalogni Ko'rish <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- How rating is calculated feature section -->
+            <section class="bg-slate-900 text-white py-16 border-y border-slate-800">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="text-center max-w-3xl mx-auto mb-12">
+                        <span class="text-brand-500 font-bold text-xs uppercase tracking-widest">Xolis va Shaffof</span>
+                        <h2 class="text-2xl sm:text-3xl font-extrabold mt-2">Reyting Qanday Aniqlanadi?</h2>
+                        <p class="text-slate-400 text-sm mt-3">Platformamizda har bir tashkilotning balli 5 ta asosiy mustaqil ko'rsatkichlarning o'rtacha qiymati asosida shakllantiriladi.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div class="bg-slate-800/60 p-6 rounded-2xl border border-slate-700/60 relative group hover:border-brand-500/50 transition">
+                            <div class="w-12 h-12 rounded-xl bg-brand-500/20 text-brand-500 flex items-center justify-center text-xl font-bold mb-4">
+                                <i class="fa-solid fa-user-check"></i>
+                            </div>
+                            <h3 class="text-lg font-bold mb-2">1. Foydalanuvchilar Bahosi (30%)</h3>
+                            <p class="text-slate-400 text-sm leading-relaxed">Tasdiqlangan fuqarolar va mijozlar tomonidan qoldirilgan reyting va sharhlar.</p>
+                        </div>
+
+                        <div class="bg-slate-800/60 p-6 rounded-2xl border border-slate-700/60 relative group hover:border-accent-500/50 transition">
+                            <div class="w-12 h-12 rounded-xl bg-accent-500/20 text-accent-500 flex items-center justify-center text-xl font-bold mb-4">
+                                <i class="fa-solid fa-file-invoice"></i>
+                            </div>
+                            <h3 class="text-lg font-bold mb-2">2. Shaffoflik va Ochiqlik (25%)</h3>
+                            <p class="text-slate-400 text-sm leading-relaxed">Ochiq ma'lumotlar portali ko'rsatkichlari, moliyaviy hisobotlar ochiqligi darajasi.</p>
+                        </div>
+
+                        <div class="bg-slate-800/60 p-6 rounded-2xl border border-slate-700/60 relative group hover:border-brand-500/50 transition">
+                            <div class="w-12 h-12 rounded-xl bg-amber-500/20 text-amber-500 flex items-center justify-center text-xl font-bold mb-4">
+                                <i class="fa-solid fa-microchip"></i>
+                            </div>
+                            <h3 class="text-lg font-bold mb-2">3. Raqamlashtirish va Sifat (45%)</h3>
+                            <p class="text-slate-400 text-sm leading-relaxed">Ekspertlar bahosi, elektron xizmatlar mavjudligi va xizmat ko'rsatish tezligi.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </section>
+
+        <!-- TAB 2: BARCHA TASHKILOTLAR KATALOGI (CATALOG) -->
+        <section id="tab-catalog" class="tab-content hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <div class="mb-8">
+                <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">O'zbekiston Tashkilotlari Katalogi</h1>
+                <p class="text-slate-500 text-sm mt-1">Barcha baholangan muassasalarni qidiring, saralang va taqqoslang</p>
+            </div>
+
+            <!-- Filter Controls -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <!-- Search -->
+                    <div class="md:col-span-2 relative">
+                        <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Qidiruv</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-search absolute left-3.5 top-3 text-slate-400"></i>
+                            <input type="text" id="catalog-search" oninput="renderCatalog()" placeholder="Tashkilot nomi bo'yicha..." 
+                                class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        </div>
+                    </div>
+
+                    <!-- Category Filter -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Soha</label>
+                        <select id="catalog-category-filter" onchange="renderCatalog()" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            <option value="all">Barcha Sohalar</option>
+                            <option value="IT & Texnologiya">IT & Texnologiya</option>
+                            <option value="Bank & Moliya">Bank & Moliya</option>
+                            <option value="Ta'lim">Ta'lim</option>
+                            <option value="Tibbiyot">Tibbiyot</option>
+                            <option value="Ishlab chiqarish">Ishlab chiqarish</option>
+                            <option value="Davlat xizmatlari">Davlat xizmatlari</option>
+                        </select>
+                    </div>
+
+                    <!-- Region Filter -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Hudud</label>
+                        <select id="catalog-region-filter" onchange="renderCatalog()" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            <option value="all">Barcha Hududlar</option>
+                            <option value="Toshkent shahri">Toshkent shahri</option>
+                            <option value="Samarqand">Samarqand</option>
+                            <option value="Farg'ona">Farg'ona</option>
+                            <option value="Buxoro">Buxoro</option>
+                            <option value="O'zbekiston bo'ylab">O'zbekiston bo'ylab</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Sort options -->
+                <div class="mt-4 pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-slate-500 font-semibold">Saralash:</span>
+                        <select id="catalog-sort" onchange="renderCatalog()" class="px-3 py-1.5 bg-slate-100 border border-slate-200 rounded-lg text-xs font-medium focus:outline-none">
+                            <option value="score-desc">Reyting (Eng yuqori)</option>
+                            <option value="score-asc">Reyting (Eng past)</option>
+                            <option value="reviews-desc">Eng ko'p sharhlar</option>
+                            <option value="name-asc">Nomi (A-Z)</option>
+                        </select>
+                    </div>
+
+                    <div id="catalog-count-badge" class="text-xs font-medium text-slate-500">
+                        Topildi: <span class="font-bold text-slate-800" id="catalog-count">0</span> ta tashkilot
+                    </div>
+                </div>
+            </div>
+
+            <!-- Catalog List Container -->
+            <div id="catalog-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Injected via JS -->
+            </div>
+        </section>
+
+        <!-- TAB 3: REYTING KALKULYATORI (CALCULATOR TOOL) -->
+        <section id="tab-calculator" class="tab-content hidden max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <div class="text-center max-w-3xl mx-auto mb-10">
+                <span class="px-3 py-1 bg-brand-100 text-brand-700 font-semibold rounded-full text-xs uppercase tracking-wider">Interaktiv Baholash</span>
+                <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight mt-2">Tashkilot Reytingini Aniqlash Kalkulyatori</h1>
+                <p class="text-slate-500 text-sm mt-2">O'zingizning muassasangiz yoki kompaniyangiz ko'rsatkichlarini kiritib, taxminiy milliy reyting indeksi va darajasini oling.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <!-- Input Sliders (8 cols) -->
+                <div class="lg:col-span-7 bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                    <h3 class="font-bold text-lg text-slate-900 border-b pb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-sliders text-brand-500"></i> Baholash Mezonlari (1 - 100)
+                    </h3>
+
+                    <!-- Metric 1 -->
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="text-sm font-semibold text-slate-700">1. Xizmat Ko'rsatish Sifati va Tezligi</label>
+                            <span id="calc-val-1" class="text-sm font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded">85 / 100</span>
+                        </div>
+                        <input type="range" id="calc-m1" min="1" max="100" value="85" oninput="calculateRating()" 
+                            class="w-full accent-brand-500 h-2 bg-slate-200 rounded-lg cursor-pointer">
+                        <p class="text-xs text-slate-400 mt-1">Mijozlar so'roviga javob berish tezligi va professionallik</p>
+                    </div>
+
+                    <!-- Metric 2 -->
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="text-sm font-semibold text-slate-700">2. Shaffoflik va Ochiq Ma'lumotlar</label>
+                            <span id="calc-val-2" class="text-sm font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded">90 / 100</span>
+                        </div>
+                        <input type="range" id="calc-m2" min="1" max="100" value="90" oninput="calculateRating()" 
+                            class="w-full accent-brand-500 h-2 bg-slate-200 rounded-lg cursor-pointer">
+                        <p class="text-xs text-slate-400 mt-1">Moliyaviy va faoliyat hisobotlarining ochiqligi</p>
+                    </div>
+
+                    <!-- Metric 3 -->
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="text-sm font-semibold text-slate-700">3. Raqamlashtirish va IT Infratuzilma</label>
+                            <span id="calc-val-3" class="text-sm font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded">78 / 100</span>
+                        </div>
+                        <input type="range" id="calc-m3" min="1" max="100" value="78" oninput="calculateRating()" 
+                            class="w-full accent-brand-500 h-2 bg-slate-200 rounded-lg cursor-pointer">
+                        <p class="text-xs text-slate-400 mt-1">Elektron xizmatlar, veb-sayt va mobil ilova qulayligi</p>
+                    </div>
+
+                    <!-- Metric 4 -->
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="text-sm font-semibold text-slate-700">4. Mijoz va Xodimlar Mamnunligi</label>
+                            <span id="calc-val-4" class="text-sm font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded">92 / 100</span>
+                        </div>
+                        <input type="range" id="calc-m4" min="1" max="100" value="92" oninput="calculateRating()" 
+                            class="w-full accent-brand-500 h-2 bg-slate-200 rounded-lg cursor-pointer">
+                        <p class="text-xs text-slate-400 mt-1">Azo va mijozlarning qayta aloqa va ijobiy fikrlari</p>
+                    </div>
+
+                    <!-- Metric 5 -->
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="text-sm font-semibold text-slate-700">5. Innovatsiya va Rivojlanish</label>
+                            <span id="calc-val-5" class="text-sm font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded">80 / 100</span>
+                        </div>
+                        <input type="range" id="calc-m5" min="1" max="100" value="80" oninput="calculateRating()" 
+                            class="w-full accent-brand-500 h-2 bg-slate-200 rounded-lg cursor-pointer">
+                        <p class="text-xs text-slate-400 mt-1">Yangi texnologiyalar va kadrlarni tayyorlash loyihalari</p>
+                    </div>
+                </div>
+
+                <!-- Result Card (5 cols) -->
+                <div class="lg:col-span-5 bg-gradient-to-br from-slate-900 to-brand-950 text-white p-6 sm:p-8 rounded-2xl border border-slate-800 flex flex-col justify-between shadow-xl">
+                    <div>
+                        <div class="text-xs uppercase font-bold text-slate-400 tracking-wider">Hisoblangan Natija</div>
+                        
+                        <div class="text-center py-8">
+                            <div id="calc-grade-badge" class="inline-block px-4 py-1 rounded-full text-sm font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 mb-3">
+                                DARAJA: A+
+                            </div>
+                            <div id="calc-score-display" class="text-6xl font-black text-white tracking-tight">
+                                8.7 <span class="text-2xl text-slate-400 font-normal">/ 10</span>
+                            </div>
+                            <p id="calc-status-text" class="text-slate-300 text-sm mt-3 font-medium">Yuqori Ishonchli Tashkilot</p>
+                        </div>
+
+                        <div class="space-y-3 pt-6 border-t border-slate-800 text-xs text-slate-300">
+                            <div class="flex justify-between">
+                                <span>Umumiy Ball:</span>
+                                <span id="calc-total-points" class="font-bold text-white">87 / 100</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Tavsiya Darajasi:</span>
+                                <span id="calc-recommend" class="font-bold text-accent-500">Juda Yuqori (92%)</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Sertifikat Maqomi:</span>
+                                <span class="font-bold text-brand-500">Muvaffaqiyatli</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="openAddOrgModal()" class="w-full mt-8 bg-brand-500 hover:bg-brand-600 text-white font-bold py-3 px-4 rounded-xl text-sm transition shadow-lg text-center">
+                        Ushbu Natija Bilan Ro'yxatga Olish
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: METODOLOGIYA (METHODOLOGY) -->
+        <section id="tab-methodology" class="tab-content hidden max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Reyting Baholash Metodologiyasi</h1>
+                <p class="text-slate-600 leading-relaxed">
+                    UzRating platformasi O'zbekistondagi korxona, tashkilot va muassasalarning samaradorligini xolis va ilmiy baholash metodologiyasiga asoslangan holda amalga oshiradi.
+                </p>
+
+                <div class="space-y-6 pt-4 border-t border-slate-100">
+                    <div class="flex gap-4">
+                        <div class="w-10 h-10 rounded-lg bg-brand-100 text-brand-600 flex items-center justify-center font-bold shrink-0">1</div>
+                        <div>
+                            <h3 class="font-bold text-slate-900 text-base">Ma'lumotlar Manbasi va Baza</h3>
+                            <p class="text-slate-500 text-sm mt-1">Baholash jarayoni davlat ochiq ma'lumotlar portali (data.gov.uz), rasmiy hisobotlar hamda tasdiqlangan foydalanuvchilar va mijozlarning sharhlari orqali shakllantiriladi.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <div class="w-10 h-10 rounded-lg bg-brand-100 text-brand-600 flex items-center justify-center font-bold shrink-0">2</div>
+                        <div>
+                            <h3 class="font-bold text-slate-900 text-base">Baho Scale va Gradatsiya</h3>
+                            <p class="text-slate-500 text-sm mt-1">Barcha ko'rsatkichlar 10 ballik shkala bo'yicha hisoblanadi va quyidagi darajalarga bo'linadi:</p>
+                            <ul class="list-disc list-inside text-xs text-slate-600 mt-2 space-y-1">
+                                <li><strong class="text-emerald-600">9.0 - 10.0 (A+)</strong> - Mukammal va Top Ishonchli</li>
+                                <li><strong class="text-blue-600">8.0 - 8.9 (A)</strong> - Yuqori Sifatli</li>
+                                <li><strong class="text-amber-600">7.0 - 7.9 (B+)</strong> - Qoniqarli / O'rta</li>
+                                <li><strong class="text-red-600">7.0 dan past (C)</strong> - Takomillashtirish Talab Etiladi</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <div class="w-10 h-10 rounded-lg bg-brand-100 text-brand-600 flex items-center justify-center font-bold shrink-0">3</div>
+                        <div>
+                            <h3 class="font-bold text-slate-900 text-base">Anti-Fraud va Soxta Sharhlardan Himoya</h3>
+                            <p class="text-slate-500 text-sm mt-1">Har bir foydalanuvchi bahosi avtomatik ravishda spam va soxta ovozlarni aniqlovchi algoritm orqali tekshiriladi.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL: Tashkilot Batafsil Ma'lumotlari -->
+    <div id="org-detail-modal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative border border-slate-100 custom-scrollbar">
+            <!-- Modal Header -->
+            <div id="modal-org-header" class="p-6 bg-slate-900 text-white sticky top-0 z-10 flex justify-between items-start">
+                <div>
+                    <span id="modal-org-category" class="px-2.5 py-1 rounded-md text-xs font-bold uppercase bg-brand-500/20 text-brand-400 border border-brand-500/30">Category</span>
+                    <h2 id="modal-org-name" class="text-2xl font-black mt-2">Tashkilot Nomi</h2>
+                    <p id="modal-org-location" class="text-slate-400 text-xs mt-1"><i class="fa-solid fa-location-dot mr-1"></i> Toshkent</p>
+                </div>
+                <button onclick="closeOrgModal()" class="text-slate-400 hover:text-white p-2 rounded-lg bg-slate-800 transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Modal Content -->
+            <div class="p-6 space-y-6">
+                <!-- Score Breakdown Header -->
+                <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-200">
+                    <div>
+                        <div class="text-xs font-semibold text-slate-500 uppercase">Umumiy Reyting Balli</div>
+                        <div class="flex items-baseline gap-2 mt-1">
+                            <span id="modal-org-score" class="text-3xl font-black text-brand-600">9.8</span>
+                            <span class="text-xs text-slate-400">/ 10.0</span>
+                        </div>
+                    </div>
+                    <div id="modal-org-stars" class="text-amber-400 text-lg">
+                        <!-- Stars -->
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <h4 class="text-xs font-bold uppercase text-slate-400 mb-1">Tashkilot Haqida</h4>
+                    <p id="modal-org-desc" class="text-slate-700 text-sm leading-relaxed">Tashkilot tasviri...</p>
+                </div>
+
+                <!-- Metrics breakdown progress bars -->
+                <div class="space-y-3 pt-2">
+                    <h4 class="text-xs font-bold uppercase text-slate-400">Asosiy Ko'rsatkichlar Breakdown</h4>
+                    
+                    <div>
+                        <div class="flex justify-between text-xs font-medium mb-1">
+                            <span class="text-slate-600">Xizmat Sifati</span>
+                            <span id="modal-m1-val" class="font-bold text-slate-800">95%</span>
+                        </div>
+                        <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                            <div id="modal-m1-bar" class="bg-brand-500 h-full rounded-full" style="width: 95%;"></div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-xs font-medium mb-1">
+                            <span class="text-slate-600">Shaffoflik va Ochiqlik</span>
+                            <span id="modal-m2-val" class="font-bold text-slate-800">90%</span>
+                        </div>
+                        <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                            <div id="modal-m2-bar" class="bg-accent-500 h-full rounded-full" style="width: 90%;"></div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-xs font-medium mb-1">
+                            <span class="text-slate-600">Foydalanuvchilar Mamnunligi</span>
+                            <span id="modal-m3-val" class="font-bold text-slate-800">98%</span>
+                        </div>
+                        <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                            <div id="modal-m3-bar" class="bg-amber-500 h-full rounded-full" style="width: 98%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Review Submission Box -->
+                <div class="pt-4 border-t border-slate-200">
+                    <h4 class="text-sm font-bold text-slate-900 mb-3">Ushbu Tashkilotga Baho Bering</h4>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs text-slate-500">Sizning bahoingiz:</span>
+                            <div class="flex gap-1 text-amber-400 cursor-pointer text-lg" id="user-star-rating">
+                                <i class="fa-solid fa-star" onclick="setUserRating(1)"></i>
+                                <i class="fa-solid fa-star" onclick="setUserRating(2)"></i>
+                                <i class="fa-solid fa-star" onclick="setUserRating(3)"></i>
+                                <i class="fa-solid fa-star" onclick="setUserRating(4)"></i>
+                                <i class="fa-solid fa-star" onclick="setUserRating(5)"></i>
+                            </div>
+                        </div>
+                        <textarea id="user-review-text" rows="3" placeholder="Tashkilot xizmati va faoliyati haqida o'z fikringizni yozing..." 
+                            class="w-full p-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500"></textarea>
+                        <button onclick="submitUserReview()" class="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition">
+                            Sharh Yuborish
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Yangi Tashkilot Qo'shish -->
+    <div id="add-org-modal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl relative border border-slate-100">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-slate-900">Yangi Tashkilot Qo'shish So'rovi</h3>
+                <button onclick="closeAddOrgModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <form onsubmit="handleAddOrgSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Tashkilot Nomi *</label>
+                    <input type="text" id="add-org-name" required placeholder="Masalan: Innovatsion Rivojlanish Agentligi" 
+                        class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Soha *</label>
+                        <select id="add-org-cat" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            <option value="IT & Texnologiya">IT & Texnologiya</option>
+                            <option value="Bank & Moliya">Bank & Moliya</option>
+                            <option value="Ta'lim">Ta'lim</option>
+                            <option value="Tibbiyot">Tibbiyot</option>
+                            <option value="Ishlab chiqarish">Ishlab chiqarish</option>
+                            <option value="Davlat xizmatlari">Davlat xizmatlari</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Hudud *</label>
+                        <select id="add-org-region" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            <option value="Toshkent shahri">Toshkent shahri</option>
+                            <option value="Samarqand">Samarqand</option>
+                            <option value="Farg'ona">Farg'ona</option>
+                            <option value="Buxoro">Buxoro</option>
+                            <option value="O'zbekiston bo'ylab">O'zbekiston bo'ylab</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Tashkilot Haqida Qisqacha</label>
+                    <textarea id="add-org-desc" rows="3" placeholder="Muassasa faoliyati haqida..." 
+                        class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"></textarea>
+                </div>
+
+                <div class="pt-2 flex justify-end gap-3">
+                    <button type="button" onclick="closeAddOrgModal()" class="px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50">Bekor qilish</button>
+                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold shadow-md shadow-brand-500/20">Yuborish</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: Taqqoslash (Compare Modal) -->
+    <div id="compare-modal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-4xl w-full p-6 sm:p-8 shadow-2xl relative border border-slate-100 max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h3 class="text-xl font-bold text-slate-900">Tashkilotlarni Solishtirish</h3>
+                    <p class="text-xs text-slate-500">Tanlangan muassasalarning reyting ko'rsatkichlari</p>
+                </div>
+                <button onclick="closeCompareModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <div id="compare-modal-content" class="overflow-x-auto">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3 transition-all duration-300 transform translate-y-20 opacity-0 border border-slate-800">
+        <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400"></i>
+        <span id="toast-msg" class="text-xs font-semibold">Xabar matni</span>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-slate-950 text-slate-400 text-xs py-8 border-t border-slate-800 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+                <span class="font-extrabold text-white text-sm">UzRating</span>
+                <span>— O'zbekistonda xolis tashkilotlar reyting tizimi © 2026</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <a href="#" class="hover:text-white transition">Ochiq Ma'lumotlar</a>
+                <a href="#" class="hover:text-white transition">Foydalanish Qoidalari</a>
+                <a href="#" class="hover:text-white transition">Aloqa</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Initial Organizations Dataset
+        let organizations = [
+            {
+                id: 1,
+                name: "IT Park Uzbekistan",
+                category: "IT & Texnologiya",
+                score: 9.8,
+                reviewsCount: 1420,
+                location: "Toshkent shahri",
+                verified: true,
+                badge: "TOP 1 IT",
+                desc: "O'zbekistonda IT-sohasini rivojlantirish va startaplarni qo'llab-quvvatlash bo'yicha bosh texnologik xab.",
+                m1: 98, // Service quality
+                m2: 95, // Transparency
+                m3: 99  // Satisfaction
+            },
+            {
+                id: 2,
+                name: "Davlat Xizmatlari Agentligi (DXA)",
+                category: "Davlat xizmatlari",
+                score: 9.7,
+                reviewsCount: 3890,
+                location: "O'zbekiston bo'ylab",
+                verified: true,
+                badge: "TOP Davlat Xizmati",
+                desc: "Aholiga qulay va tezkor davlat xizmatlarini ko'rsatish bo'yicha respublika yagona tarmog'i.",
+                m1: 96,
+                m2: 98,
+                m3: 95
+            },
+            {
+                id: 3,
+                name: "Kapitalbank ATB",
+                category: "Bank & Moliya",
+                score: 9.6,
+                reviewsCount: 2150,
+                location: "Toshkent shahri",
+                verified: true,
+                badge: "TOP 1 Bank",
+                desc: "Raqamli banking va tijorat xizmatlari sohasidagi etakchi moliya muassasasidan biri.",
+                m1: 95,
+                m2: 92,
+                m3: 96
+            },
+            {
+                id: 4,
+                name: "TATU - Toshkent Axborot Texnologiyalari Universiteti",
+                category: "Ta'lim",
+                score: 9.5,
+                reviewsCount: 1840,
+                location: "Toshkent shahri",
+                verified: true,
+                badge: "TOP Universitet",
+                desc: "Axborot texnologiyalari va telekommunikatsiya sohasida kadrlar tayyorlovchi tayanch oliygoh.",
+                m1: 92,
+                m2: 94,
+                m3: 93
+            },
+            {
+                id: 5,
+                name: "Akfa Medline Tibbiyot Markazi",
+                category: "Tibbiyot",
+                score: 9.4,
+                reviewsCount: 1290,
+                location: "Toshkent shahri",
+                verified: true,
+                badge: "TOP Tibbiyot",
+                desc: "Zamonaviy diagnostika va davolash uskunalari bilan jihozlangan ko'p tarmoqli tibbiyot klasteri.",
+                m1: 94,
+                m2: 90,
+                m3: 95
+            },
+            {
+                id: 6,
+                name: "EPAM Systems Uzbekistan",
+                category: "IT & Texnologiya",
+                score: 9.6,
+                reviewsCount: 870,
+                location: "Toshkent shahri",
+                verified: true,
+                badge: "Global Dasturlash",
+                desc: "Xalqaro dasturiy ta'minot va raqamli muhandislik xizmatlarini ko'rsatuvchi transmilliy kompaniya.",
+                m1: 97,
+                m2: 95,
+                m3: 96
+            },
+            {
+                id: 7,
+                name: "Samarqand Davlat Universiteti (SamDU)",
+                category: "Ta'lim",
+                score: 9.3,
+                reviewsCount: 1120,
+                location: "Samarqand",
+                verified: true,
+                badge: "Hududiy Etakchi",
+                desc: "O'zbekistondagi eng qadimiy va nufuzli ilmiy-ta'limiy markazlardan biri.",
+                m1: 91,
+                m2: 90,
+                m3: 92
+            },
+            {
+                id: 8,
+                name: "Artel Electronics",
+                category: "Ishlab chiqarish",
+                score: 9.2,
+                reviewsCount: 1560,
+                location: "Toshkent shahri",
+                verified: true,
+                badge: "Sanoat Etakchisi",
+                desc: "Maishiy texnikalar va elektronika mahsulotlari ishlab chiqaruvchi yirik sanoat brendi.",
+                m1: 90,
+                m2: 89,
+                m3: 92
+            },
+            {
+                id: 9,
+                name: "Ipoteka-bank ATIB",
+                category: "Bank & Moliya",
+                score: 9.1,
+                reviewsCount: 940,
+                location: "Toshkent shahri",
+                verified: true,
+                badge: "Ipoteka & Kredit",
+                desc: "Aholi va biznesni moliyaviy qo'llab-quvvatlash tizimiga ega yirik tijorat banki.",
+                m1: 89,
+                m2: 91,
+                m3: 90
+            }
+        ];
+
+        // Comparison state
+        let selectedForCompare = [];
+        let activeSelectedOrgId = null;
+        let activeUserRating = 5;
+
+        // On Page Load
+        window.addEventListener('DOMContentLoaded', () => {
+            renderTopCards('all');
+            renderCatalog();
+            calculateRating();
+        });
+
+        // Navigation Tab Switching Logic
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-slate-800', 'text-brand-500');
+                btn.classList.add('text-slate-300');
+            });
+
+            const activeTab = document.getElementById(`tab-${tabName}`);
+            const activeNav = document.getElementById(`nav-${tabName}`);
+            
+            if (activeTab) activeTab.classList.remove('hidden');
+            if (activeNav) {
+                activeNav.classList.add('bg-slate-800/60', 'text-brand-500');
+                activeNav.classList.remove('text-slate-300');
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Hero Search Redirect to Catalog
+        function handleHeroSearch() {
+            const query = document.getElementById('hero-search-input').value.trim();
+            switchTab('catalog');
+            if (query) {
+                document.getElementById('catalog-search').value = query;
+                renderCatalog();
+            }
+        }
+
+        // Render TOP Cards on Home Page
+        function renderTopCards(category) {
+            const grid = document.getElementById('top-cards-grid');
+            grid.innerHTML = '';
+
+            let filtered = category === 'all' 
+                ? organizations.slice(0, 6) 
+                : organizations.filter(o => o.category === category);
+
+            filtered.sort((a, b) => b.score - a.score);
+
+            filtered.forEach((org, idx) => {
+                const card = createOrgCardHtml(org, idx + 1);
+                grid.appendChild(card);
+            });
+        }
+
+        function filterTopCards(cat) {
+            document.querySelectorAll('.top-filter-btn').forEach(btn => {
+                if (btn.getAttribute('data-cat') === cat) {
+                    btn.className = "top-filter-btn px-4 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap bg-brand-500 text-white shadow-md shadow-brand-500/20";
+                } else {
+                    btn.className = "top-filter-btn px-4 py-2 rounded-xl text-xs font-semibold bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 transition whitespace-nowrap";
+                }
+            });
+            renderTopCards(cat);
+        }
+
+        // HTML Template for Organization Card
+        function createOrgCardHtml(org, rank) {
+            const div = document.createElement('div');
+            div.className = "bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm card-hover relative flex flex-col justify-between";
+
+            const isCompared = selectedForCompare.includes(org.id);
+
+            div.innerHTML = `
+                <div>
+                    <!-- Card Top Header -->
+                    <div class="flex items-start justify-between gap-3 mb-3">
+                        <span class="px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider bg-slate-100 text-slate-700">
+                            ${org.category}
+                        </span>
+                        
+                        <div class="flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-lg border border-emerald-200">
+                            <i class="fa-solid fa-star text-amber-400 text-xs"></i>
+                            <span class="font-extrabold text-sm">${org.score}</span>
+                            <span class="text-[10px] text-emerald-600 font-medium">/ 10</span>
+                        </div>
+                    </div>
+
+                    <!-- Title & Badge -->
+                    <div class="mb-3">
+                        <div class="flex items-center gap-2 mb-1">
+                            ${rank ? `<span class="w-6 h-6 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center shrink-0">#${rank}</span>` : ''}
+                            <h3 class="font-extrabold text-slate-900 text-lg hover:text-brand-600 transition cursor-pointer" onclick="openOrgDetail(${org.id})">
+                                ${org.name}
+                            </h3>
+                        </div>
+                        <p class="text-xs text-slate-400 flex items-center gap-1">
+                            <i class="fa-solid fa-location-dot"></i> ${org.location} • <span class="text-slate-500 font-semibold">${org.reviewsCount.toLocaleString()} ta sharh</span>
+                        </p>
+                    </div>
+
+                    <!-- Short Description -->
+                    <p class="text-slate-600 text-xs leading-relaxed mb-4 line-clamp-2">
+                        ${org.desc}
+                    </p>
+
+                    <!-- Key Indicators Mini-Bars -->
+                    <div class="space-y-1.5 py-3 border-t border-slate-100 text-[11px]">
+                        <div class="flex justify-between text-slate-600">
+                            <span>Xizmat sifati:</span>
+                            <span class="font-bold text-slate-800">${org.m1}%</span>
+                        </div>
+                        <div class="flex justify-between text-slate-600">
+                            <span>Shaffoflik:</span>
+                            <span class="font-bold text-slate-800">${org.m2}%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card Actions -->
+                <div class="pt-4 border-t border-slate-100 flex items-center gap-2">
+                    <button onclick="openOrgDetail(${org.id})" class="flex-grow bg-slate-900 hover:bg-slate-800 text-white py-2.5 px-3 rounded-xl text-xs font-bold transition text-center">
+                        Batafsil Ko'rish
+                    </button>
+                    <button onclick="toggleCompare(${org.id})" class="p-2.5 rounded-xl border ${isCompared ? 'bg-brand-500 text-white border-brand-500' : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'} transition" title="Taqqoslashtirishga qo'shish">
+                        <i class="fa-solid fa-code-compare"></i>
+                    </button>
+                </div>
+            `;
+            return div;
+        }
+
+        // Render Catalog Tab
+        function renderCatalog() {
+            const grid = document.getElementById('catalog-grid');
+            const searchVal = document.getElementById('catalog-search').value.toLowerCase().trim();
+            const catVal = document.getElementById('catalog-category-filter').value;
+            const regVal = document.getElementById('catalog-region-filter').value;
+            const sortVal = document.getElementById('catalog-sort').value;
+
+            grid.innerHTML = '';
+
+            let result = organizations.filter(org => {
+                const matchesSearch = org.name.toLowerCase().includes(searchVal) || org.desc.toLowerCase().includes(searchVal);
+                const matchesCat = catVal === 'all' || org.category === catVal;
+                const matchesReg = regVal === 'all' || org.location === regVal;
+                return matchesSearch && matchesCat && matchesReg;
+            });
+
+            // Sorting
+            if (sortVal === 'score-desc') result.sort((a, b) => b.score - a.score);
+            if (sortVal === 'score-asc') result.sort((a, b) => a.score - b.score);
+            if (sortVal === 'reviews-desc') result.sort((a, b) => b.reviewsCount - a.reviewsCount);
+            if (sortVal === 'name-asc') result.sort((a, b) => a.name.localeCompare(b.name));
+
+            document.getElementById('catalog-count').innerText = result.length;
+
+            if (result.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full text-center py-12 bg-white rounded-2xl border border-slate-200">
+                        <i class="fa-solid fa-folder-open text-4xl text-slate-300 mb-3"></i>
+                        <h4 class="font-bold text-slate-700 text-base">Hech qanday tashkilot topilmadi</h4>
+                        <p class="text-xs text-slate-400 mt-1">Qidiruv yoki filtr mezonlarini o'zgartirib ko'ring.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            result.forEach(org => {
+                grid.appendChild(createOrgCardHtml(org));
+            });
+        }
+
+        // Interactive Calculator Logic
+        function calculateRating() {
+            const m1 = parseInt(document.getElementById('calc-m1').value);
+            const m2 = parseInt(document.getElementById('calc-m2').value);
+            const m3 = parseInt(document.getElementById('calc-m3').value);
+            const m4 = parseInt(document.getElementById('calc-m4').value);
+            const m5 = parseInt(document.getElementById('calc-m5').value);
+
+            document.getElementById('calc-val-1').innerText = `${m1} / 100`;
+            document.getElementById('calc-val-2').innerText = `${m2} / 100`;
+            document.getElementById('calc-val-3').innerText = `${m3} / 100`;
+            document.getElementById('calc-val-4').innerText = `${m4} / 100`;
+            document.getElementById('calc-val-5').innerText = `${m5} / 100`;
+
+            // Weighted score calculation
+            const avg100 = (m1 * 0.25) + (m2 * 0.20) + (m3 * 0.20) + (m4 * 0.20) + (m5 * 0.15);
+            const score10 = (avg100 / 10).toFixed(1);
+
+            document.getElementById('calc-score-display').innerHTML = `${score10} <span class="text-2xl text-slate-400 font-normal">/ 10</span>`;
+            document.getElementById('calc-total-points').innerText = `${Math.round(avg100)} / 100`;
+
+            const gradeBadge = document.getElementById('calc-grade-badge');
+            const statusText = document.getElementById('calc-status-text');
+
+            if (score10 >= 9.0) {
+                gradeBadge.innerText = "DARAJA: A+ (Mukammal)";
+                gradeBadge.className = "inline-block px-4 py-1 rounded-full text-xs font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 mb-3";
+                statusText.innerText = "Respublika TOP Ishonchli Tashkiloti";
+            } else if (score10 >= 8.0) {
+                gradeBadge.innerText = "DARAJA: A (Yuqori Sifatli)";
+                gradeBadge.className = "inline-block px-4 py-1 rounded-full text-xs font-black bg-blue-500/20 text-blue-400 border border-blue-500/30 mb-3";
+                statusText.innerText = "Sifat Standartlariga Mos Tashkilot";
+            } else if (score10 >= 7.0) {
+                gradeBadge.innerText = "DARAJA: B+ (Qoniqarli)";
+                gradeBadge.className = "inline-block px-4 py-1 rounded-full text-xs font-black bg-amber-500/20 text-amber-400 border border-amber-500/30 mb-3";
+                statusText.innerText = "O'rta Ko'rsatkichli Muassasa";
+            } else {
+                gradeBadge.innerText = "DARAJA: C (Past Ball)";
+                gradeBadge.className = "inline-block px-4 py-1 rounded-full text-xs font-black bg-red-500/20 text-red-400 border border-red-500/30 mb-3";
+                statusText.innerText = "Ochilish va Islohot Talab Etiladi";
+            }
+        }
+
+        // Toggle Organization in Comparison List
+        function toggleCompare(orgId) {
+            const index = selectedForCompare.indexOf(orgId);
+            if (index > -1) {
+                selectedForCompare.splice(index, 1);
+                showToast("Tashkilot taqqoslash ro'yxatidan olib tashlandi");
+            } else {
+                if (selectedForCompare.length >= 3) {
+                    showToast("Ko'pi bilan 3 ta tashkilotni taqqoslash mumkin!", true);
+                    return;
+                }
+                selectedForCompare.push(orgId);
+                showToast("Tashkilot taqqoslashga qo'shildi");
+            }
+
+            document.getElementById('compare-badge').innerText = selectedForCompare.length;
+            renderCatalog();
+            renderTopCards('all');
+        }
+
+        // Open Comparison Modal
+        function openCompareModal() {
+            if (selectedForCompare.length === 0) {
+                showToast("Taqqoslash uchun kamida 1 ta tashkilot tanlang!", true);
+                return;
+            }
+
+            const container = document.getElementById('compare-modal-content');
+            const items = organizations.filter(o => selectedForCompare.includes(o.id));
+
+            let html = `
+                <table class="w-full text-left text-sm border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-200">
+                            <th class="p-3 text-slate-400 text-xs uppercase font-semibold">Ko'rsatkich</th>
+                            ${items.map(i => `<th class="p-3 font-extrabold text-slate-900 text-base min-w-[180px]">${i.name}</th>`).join('')}
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        <tr>
+                            <td class="p-3 text-xs font-bold text-slate-500 uppercase">Soha</td>
+                            ${items.map(i => `<td class="p-3 font-medium text-slate-700">${i.category}</td>`).join('')}
+                        </tr>
+                        <tr>
+                            <td class="p-3 text-xs font-bold text-slate-500 uppercase">Umumiy Reyting</td>
+                            ${items.map(i => `<td class="p-3"><span class="bg-brand-50 text-brand-700 font-black px-2.5 py-1 rounded-lg border border-brand-200">${i.score} / 10</span></td>`).join('')}
+                        </tr>
+                        <tr>
+                            <td class="p-3 text-xs font-bold text-slate-500 uppercase">Xizmat Sifati</td>
+                            ${items.map(i => `<td class="p-3 font-bold text-slate-800">${i.m1}%</td>`).join('')}
+                        </tr>
+                        <tr>
+                            <td class="p-3 text-xs font-bold text-slate-500 uppercase">Shaffoflik</td>
+                            ${items.map(i => `<td class="p-3 font-bold text-slate-800">${i.m2}%</td>`).join('')}
+                        </tr>
+                        <tr>
+                            <td class="p-3 text-xs font-bold text-slate-500 uppercase">Sharhlar Soni</td>
+                            ${items.map(i => `<td class="p-3 font-medium text-slate-600">${i.reviewsCount} ta</td>`).join('')}
+                        </tr>
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML = html;
+            document.getElementById('compare-modal').classList.remove('hidden');
+        }
+
+        function closeCompareModal() {
+            document.getElementById('compare-modal').classList.add('hidden');
+        }
+
+        // Organization Detail Modal
+        function openOrgDetail(orgId) {
+            const org = organizations.find(o => o.id === orgId);
+            if (!org) return;
+
+            activeSelectedOrgId = orgId;
+            document.getElementById('modal-org-name').innerText = org.name;
+            document.getElementById('modal-org-category').innerText = org.category;
+            document.getElementById('modal-org-location').innerHTML = `<i class="fa-solid fa-location-dot mr-1"></i> ${org.location}`;
+            document.getElementById('modal-org-score').innerText = org.score;
+            document.getElementById('modal-org-desc').innerText = org.desc;
+
+            // Star icons
+            const fullStars = Math.floor(org.score / 2);
+            let starsHtml = '';
+            for (let i = 0; i < 5; i++) {
+                if (i < fullStars) starsHtml += `<i class="fa-solid fa-star"></i>`;
+                else starsHtml += `<i class="fa-regular fa-star"></i>`;
+            }
+            document.getElementById('modal-org-stars').innerHTML = starsHtml;
+
+            // Bars
+            document.getElementById('modal-m1-val').innerText = `${org.m1}%`;
+            document.getElementById('modal-m1-bar').style.width = `${org.m1}%`;
+            document.getElementById('modal-m2-val').innerText = `${org.m2}%`;
+            document.getElementById('modal-m2-bar').style.width = `${org.m2}%`;
+            document.getElementById('modal-m3-val').innerText = `${org.m3}%`;
+            document.getElementById('modal-m3-bar').style.width = `${org.m3}%`;
+
+            document.getElementById('org-detail-modal').classList.remove('hidden');
+        }
+
+        function closeOrgModal() {
+            document.getElementById('org-detail-modal').classList.add('hidden');
+        }
+
+        // Star Selection in Modal
+        function setUserRating(stars) {
+            activeUserRating = stars;
+            const container = document.getElementById('user-star-rating');
+            const icons = container.querySelectorAll('i');
+            icons.forEach((icon, idx) => {
+                if (idx < stars) {
+                    icon.className = "fa-solid fa-star text-amber-400";
+                } else {
+                    icon.className = "fa-regular fa-star text-amber-400";
+                }
+            });
+        }
+
+        function submitUserReview() {
+            const text = document.getElementById('user-review-text').value.trim();
+            if (!text) {
+                showToast("Iltimos, sharh matnini kiriting!", true);
+                return;
+            }
+
+            const org = organizations.find(o => o.id === activeSelectedOrgId);
+            if (org) {
+                org.reviewsCount += 1;
+                showToast("Sharhingiz va bahoingiz muvaffaqiyatli qabul qilindi!");
+                document.getElementById('user-review-text').value = '';
+                closeOrgModal();
+                renderTopCards('all');
+                renderCatalog();
+            }
+        }
+
+        // Add Organization Modal
+        function openAddOrgModal() {
+            document.getElementById('add-org-modal').classList.remove('hidden');
+        }
+
+        function closeAddOrgModal() {
+            document.getElementById('add-org-modal').classList.add('hidden');
+        }
+
+        function handleAddOrgSubmit(e) {
+            e.preventDefault();
+            const name = document.getElementById('add-org-name').value.trim();
+            const category = document.getElementById('add-org-cat').value;
+            const region = document.getElementById('add-org-region').value;
+            const desc = document.getElementById('add-org-desc').value.trim();
+
+            const newOrg = {
+                id: Date.now(),
+                name: name,
+                category: category,
+                score: 8.5,
+                reviewsCount: 1,
+                location: region,
+                verified: false,
+                badge: "Yangi",
+                desc: desc || "Tashkilot yangi qo'shildi hamda tekshiruv jarayonida.",
+                m1: 85,
+                m2: 80,
+                m3: 88
+            };
+
+            organizations.unshift(newOrg);
+            renderCatalog();
+            renderTopCards('all');
+            closeAddOrgModal();
+            showToast("Tashkilot muvaffaqiyatli ro'yxatga olindi!");
+        }
+
+        // Toast Helper
+        function showToast(msg, isError = false) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-msg');
+            const toastIcon = document.getElementById('toast-icon');
+
+            toastMsg.innerText = msg;
+            if (isError) {
+                toastIcon.className = "fa-solid fa-triangle-exclamation text-amber-400";
+            } else {
+                toastIcon.className = "fa-solid fa-circle-check text-emerald-400";
+            }
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+                toast.classList.remove('translate-y-0', 'opacity-100');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
